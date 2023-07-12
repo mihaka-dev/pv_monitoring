@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_pv_monitoring/pv_data.dart';
+import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 
 void main() {
   runApp(const MyApp());
@@ -33,6 +34,7 @@ class MyHomePage extends StatefulWidget {
 class _MyHomePageState extends State<MyHomePage> {
   String? address = "Blank Address";
   bool isLogin = false;
+  final storage = const FlutterSecureStorage();
 
   var api = PVData();
 
@@ -49,7 +51,18 @@ class _MyHomePageState extends State<MyHomePage> {
         address = value.data?.address?.city;
       });
     });
-    api.listMeters();
+    api.currentPower();
+  }
+
+  @override
+  void initState() {
+    // TODO: implement initState
+    api.checkToken().then((value) {
+      setState(() {
+        isLogin = true;
+      });
+    });
+    super.initState();
   }
 
   @override
