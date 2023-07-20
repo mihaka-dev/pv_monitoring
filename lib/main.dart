@@ -33,6 +33,7 @@ class MyHomePage extends StatefulWidget {
 
 class _MyHomePageState extends State<MyHomePage> {
   String? address = "Blank Address";
+  String currentPower = "0 kW";
   bool isLogin = false;
   final storage = const FlutterSecureStorage();
 
@@ -51,15 +52,20 @@ class _MyHomePageState extends State<MyHomePage> {
         address = value.data?.address?.city;
       });
     });
-    api.currentPower();
+    api.currentPower().then((value) {
+      setState(() {
+        currentPower = '${value['value']} kW';
+      });
+    });
   }
 
   @override
   void initState() {
-    // TODO: implement initState
     api.checkToken().then((value) {
+      value ? debugPrint('Token valid') : debugPrint('Token Invalid');
       setState(() {
-        isLogin = true;
+        isLogin = value;
+        _getDetailSystem();
       });
     });
     super.initState();
@@ -88,12 +94,22 @@ class _MyHomePageState extends State<MyHomePage> {
               height: 200,
               width: 200,
               color: Colors.blueGrey,
-              child: const Column(
+              child: Column(
                 mainAxisAlignment: MainAxisAlignment.spaceEvenly,
                 children: [
-                  Text("Current Output", style: TextStyle(color: Colors.white)),
-                  Text("Total Yield", style: TextStyle(color: Colors.white)),
-                  Text("CO Avoidance", style: TextStyle(color: Colors.white)),
+                  Column(
+                    children: [
+                      Text(currentPower,
+                          style: const TextStyle(
+                              color: Colors.white, fontSize: 30)),
+                      const Text("Current Output",
+                          style: TextStyle(color: Colors.white))
+                    ],
+                  ),
+                  const Text("Total Yield",
+                      style: TextStyle(color: Colors.white)),
+                  const Text("CO Avoidance",
+                      style: TextStyle(color: Colors.white)),
                 ],
               ),
             ),

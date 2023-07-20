@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_pv_monitoring/entity/detail_system.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:http/http.dart' as http;
+import 'package:intl/intl.dart';
 
 class PVData {
   String token = '';
@@ -30,7 +31,14 @@ class PVData {
     debugPrint('Response body: $token');
   }
 
-  Future<String?> checkToken() => storage.read(key: 'token');
+  Future<bool> checkToken() async {
+    var savedToken = await storage.read(key: 'token');
+    if (savedToken != null) {
+      token = savedToken;
+      return true;
+    }
+    return false;
+  }
 
   Future<DetailSystem> detailSystem() async {
     var url = Uri.https('api.meteocontrol.de', '/v2/systems/$systemId');
@@ -49,14 +57,21 @@ class PVData {
   }
 
   Future<Map> currentPower() async {
+    DateTime now = DateTime.now();
+    var dateFormatter = DateFormat('yyyy-MM-ddTHH:mm:ss');
+    var from = dateFormatter.format(now.subtract(const Duration(minutes: 15)));
+    var to = dateFormatter.format(now);
+
     var url = Uri.https(
         'api.meteocontrol.de',
         '/v2/systems/FZK6D/basics/abbreviations/C_P/measurements',
-        {'from': '2023-07-01T08:00:00', 'to': '2023-07-01T09:00:00'});
+        {'from': from, 'to': to});
     var response = await http.get(url,
         headers: {"Authorization": 'Bearer $token', "X-API-KEY": apiKey});
     Map<String, dynamic> responseBody = json.decode(response.body);
     debugPrint(response.body);
-    return responseBody;
+
+    debugPrint('This my token : $token');
+    return responseBody["data"]["C_P"][0];
   }
 }
