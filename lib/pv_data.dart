@@ -59,7 +59,7 @@ class PVData {
   Future<Map> currentPower() async {
     DateTime now = DateTime.now();
     var dateFormatter = DateFormat('yyyy-MM-ddTHH:mm:ss');
-    var from = dateFormatter.format(now.subtract(const Duration(minutes: 15)));
+    var from = dateFormatter.format(now.subtract(const Duration(minutes: 60)));
     var to = dateFormatter.format(now);
 
     var url = Uri.https(
@@ -70,8 +70,16 @@ class PVData {
         headers: {"Authorization": 'Bearer $token', "X-API-KEY": apiKey});
     Map<String, dynamic> responseBody = json.decode(response.body);
     debugPrint(response.body);
-
     debugPrint('This my token : $token');
-    return responseBody["data"]["C_P"][0];
+    List listCurrentPower = responseBody["data"]["C_P"];
+    // var i = 1;
+
+    // // Check the value is Null or not
+    // while (listCurrentPower[listCurrentPower.length - i]['value'].isNull) {
+    //   debugPrint(listCurrentPower[listCurrentPower.length - i]['value']);
+    //   i++;
+    // }
+
+    return listCurrentPower[listCurrentPower.length - 1];
   }
 }
